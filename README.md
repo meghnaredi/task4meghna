@@ -1,4 +1,17 @@
-# task4meghna
+# Step 1: Import required libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import warnings
+warnings.filterwarnings('ignore')
+
+# Step 2: Load the dataset
+data = pd.read_csv('data.csv')
 "id","diagnosis","radius_mean","texture_mean","perimeter_mean","area_mean","smoothness_mean","compactness_mean","concavity_mean","concave points_mean","symmetry_mean","fractal_dimension_mean","radius_se","texture_se","perimeter_se","area_se","smoothness_se","compactness_se","concavity_se","concave points_se","symmetry_se","fractal_dimension_se","radius_worst","texture_worst","perimeter_worst","area_worst","smoothness_worst","compactness_worst","concavity_worst","concave points_worst","symmetry_worst","fractal_dimension_worst",
 842302,M,17.99,10.38,122.8,1001,0.1184,0.2776,0.3001,0.1471,0.2419,0.07871,1.095,0.9053,8.589,153.4,0.006399,0.04904,0.05373,0.01587,0.03003,0.006193,25.38,17.33,184.6,2019,0.1622,0.6656,0.7119,0.2654,0.4601,0.1189
 842517,M,20.57,17.77,132.9,1326,0.08474,0.07864,0.0869,0.07017,0.1812,0.05667,0.5435,0.7339,3.398,74.08,0.005225,0.01308,0.0186,0.0134,0.01389,0.003532,24.99,23.41,158.8,1956,0.1238,0.1866,0.2416,0.186,0.275,0.08902
@@ -569,3 +582,68 @@
 926954,M,16.6,28.08,108.3,858.1,0.08455,0.1023,0.09251,0.05302,0.159,0.05648,0.4564,1.075,3.425,48.55,0.005903,0.03731,0.0473,0.01557,0.01318,0.003892,18.98,34.12,126.7,1124,0.1139,0.3094,0.3403,0.1418,0.2218,0.0782
 927241,M,20.6,29.33,140.1,1265,0.1178,0.277,0.3514,0.152,0.2397,0.07016,0.726,1.595,5.772,86.22,0.006522,0.06158,0.07117,0.01664,0.02324,0.006185,25.74,39.42,184.6,1821,0.165,0.8681,0.9387,0.265,0.4087,0.124
 92751,B,7.76,24.54,47.92,181,0.05263,0.04362,0,0,0.1587,0.05884,0.3857,1.428,2.548,19.15,0.007189,0.00466,0,0,0.02676,0.002783,9.456,30.37,59.16,268.6,0.08996,0.06444,0,0,0.2871,0.07039
+
+# Step 3: Display the first few rows of the dataset
+print("First 5 rows of the dataset:")
+print(data.head())
+
+# Step 4: Check basic info
+print("\nDataset Information:")
+print(data.info())
+
+# Step 5: Check for missing values
+print("\nMissing Values:")
+print(data.isnull().sum())
+
+# Step 6: Drop unwanted columns
+data.drop(['Unnamed: 32', 'id'], axis=1, inplace=True)
+
+# Step 7: Encode the target variable (diagnosis)
+le = LabelEncoder()
+data['diagnosis'] = le.fit_transform(data['diagnosis'])  # M = 1, B = 0
+
+# Step 8: Summary statistics
+print("\nStatistical Summary:")
+print(data.describe())
+
+# Step 9: Countplot of target classes
+sns.countplot(data['diagnosis'])
+plt.title("Diagnosis Count (0 = Benign, 1 = Malignant)")
+plt.show()
+
+# Step 10: Correlation heatmap (optional visualization)
+plt.figure(figsize=(12, 10))
+sns.heatmap(data.corr(), cmap='coolwarm')
+plt.title("Feature Correlation Heatmap")
+plt.show()
+
+# Step 11: Split features and target
+X = data.drop('diagnosis', axis=1)
+y = data['diagnosis']
+
+# Step 12: Feature scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Step 13: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Step 14: Initialize Logistic Regression Model
+model = LogisticRegression(max_iter=10000)
+
+# Step 15: Train the model
+model.fit(X_train, y_train)
+
+# Step 16: Make predictions
+y_pred = model.predict(X_test)
+
+# Step 17: Evaluate the model
+print("\nModel Evaluation Results:")
+print("Accuracy Score:", accuracy_score(y_test, y_pred))
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+# Step 18: Predict on a sample input (optional)
+sample = X_test[0].reshape(1, -1)
+sample_pred = model.predict(sample)
+print("Sample Prediction:", "Malignant" if sample_pred[0] == 1 else "Benign")
